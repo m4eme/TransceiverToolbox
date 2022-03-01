@@ -1,4 +1,4 @@
-@Library('tfc-lib') _
+@Library('sdgtt-lib') _
 
 dockerConfig = getDockerConfig(['MATLAB','Vivado'], matlabHSPro=false)
 dockerConfig.add("-e MLRELEASE=R2021a")
@@ -124,7 +124,11 @@ stage("Hardware Streaming Tests") {
 node {
     stage('Deploy Development') {
         unstash "builtSources"
-        uploadArtifactory('TransceiverToolbox','*.mltbx')
+        target = uploadArtifactory('TransceiverToolbox','*.mltbx')
+        if (target != null){
+            sh 'echo "' + new Date().format("yyMMdd_HHmm") + ": " + target + '" >> build_history.log'
+            uploadArtifactory('TransceiverToolbox','*.log')
+        }
     }
     if (env.BRANCH_NAME == 'master') {
         stage('Deploy Production') {
