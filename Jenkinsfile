@@ -31,7 +31,6 @@ stage("Build Toolbox") {
         if (branchName == 'hdl_2019_r2') {
             stash includes: '**', name: 'builtSources', useDefaultExcludes: false
             archiveArtifacts artifacts: 'hdl/*', followSymlinks: false, allowEmptyArchive: true
-            archiveArtifacts artifacts: '*BOOT.BIN', followSymlinks: false, allowEmptyArchive: true
         }
     }
 }
@@ -39,19 +38,19 @@ stage("Build Toolbox") {
 /////////////////////////////////////////////////////
 
 // boardNames = ['zed','zc702','zc706','zcu102','adrv9361','adrv9364','pluto']
-// boardNames = ['zc702']
-// dockerConfig.add("-e HDLBRANCH=hdl_2019_r2")
+boardNames = ['zc702']
+dockerConfig.add("-e HDLBRANCH=hdl_2019_r2")
 
-// stage("HDL Tests") {
-//     dockerParallelBuild(boardNames, dockerHost, dockerConfig) { 
-//         branchName ->
-//         withEnv(['BOARD='+branchName]) {
-//             stage("Source") {
-//                 unstash "builtSources"
-//                 sh 'make -C ./CI/scripts test_synth'
-//                 junit testResults: 'test/*.xml', allowEmptyResults: true
-//                 archiveArtifacts artifacts: 'test/logs/*', followSymlinks: false, allowEmptyArchive: true
-//             }
+stage("HDL Tests") {
+    dockerParallelBuild(boardNames, dockerHost, dockerConfig) { 
+        branchName ->
+        withEnv(['BOARD='+branchName]) {
+            stage("Source") {
+                unstash "builtSources"
+                sh 'make -C ./CI/scripts test_synth'
+                junit testResults: 'test/*.xml', allowEmptyResults: true
+                archiveArtifacts artifacts: 'test/logs/*', followSymlinks: false, allowEmptyArchive: true
+            }
 /*
             stage("Synth") {
                 unstash "builtSources"
@@ -60,16 +59,16 @@ stage("Build Toolbox") {
                 archiveArtifacts artifacts: 'test/logs/*', followSymlinks: false, allowEmptyArchive: true
             }
 */
-            // stage("Installer") {
-            //     unstash "builtSources"
-            //     sh 'make -C ./CI/scripts test_installer'
-            //     junit testResults: 'test/*.xml', allowEmptyResults: true
-            //     archiveArtifacts artifacts: 'test/logs/*', followSymlinks: false, allowEmptyArchive: true
-            //     archiveArtifacts artifacts: '*BOOT.BIN', followSymlinks: false, allowEmptyArchive: true
-            // }
-//         }
-//     }
-// }
+            stage("Installer") {
+                unstash "builtSources"
+                sh 'make -C ./CI/scripts test_installer'
+                junit testResults: 'test/*.xml', allowEmptyResults: true
+                archiveArtifacts artifacts: 'test/logs/*', followSymlinks: false, allowEmptyArchive: true
+                archiveArtifacts artifacts: '*BOOT.BIN', followSymlinks: false, allowEmptyArchive: true
+            }
+        }
+    }
+}
 
 /////////////////////////////////////////////////////
 
