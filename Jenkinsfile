@@ -31,25 +31,27 @@ stage("Build Toolbox") {
         if (branchName == 'hdl_2019_r2') {
             stash includes: '**', name: 'builtSources', useDefaultExcludes: false
             archiveArtifacts artifacts: 'hdl/*', followSymlinks: false, allowEmptyArchive: true
+            archiveArtifacts artifacts: '*BOOT.BIN', followSymlinks: false, allowEmptyArchive: true
         }
     }
 }
 
 /////////////////////////////////////////////////////
 
-boardNames = ['zed','zc702','zc706','zcu102','adrv9361','adrv9364','pluto']
-dockerConfig.add("-e HDLBRANCH=hdl_2019_r2")
+// boardNames = ['zed','zc702','zc706','zcu102','adrv9361','adrv9364','pluto']
+// boardNames = ['zc702']
+// dockerConfig.add("-e HDLBRANCH=hdl_2019_r2")
 
-stage("HDL Tests") {
-    dockerParallelBuild(boardNames, dockerHost, dockerConfig) { 
-        branchName ->
-        withEnv(['BOARD='+branchName]) {
-            stage("Source") {
-                unstash "builtSources"
-                sh 'make -C ./CI/scripts test_synth'
-                junit testResults: 'test/*.xml', allowEmptyResults: true
-                archiveArtifacts artifacts: 'test/logs/*', followSymlinks: false, allowEmptyArchive: true
-            }
+// stage("HDL Tests") {
+//     dockerParallelBuild(boardNames, dockerHost, dockerConfig) { 
+//         branchName ->
+//         withEnv(['BOARD='+branchName]) {
+//             stage("Source") {
+//                 unstash "builtSources"
+//                 sh 'make -C ./CI/scripts test_synth'
+//                 junit testResults: 'test/*.xml', allowEmptyResults: true
+//                 archiveArtifacts artifacts: 'test/logs/*', followSymlinks: false, allowEmptyArchive: true
+//             }
 /*
             stage("Synth") {
                 unstash "builtSources"
@@ -58,66 +60,66 @@ stage("HDL Tests") {
                 archiveArtifacts artifacts: 'test/logs/*', followSymlinks: false, allowEmptyArchive: true
             }
 */
-            stage("Installer") {
-                unstash "builtSources"
-                sh 'make -C ./CI/scripts test_installer'
-                junit testResults: 'test/*.xml', allowEmptyResults: true
-                archiveArtifacts artifacts: 'test/logs/*', followSymlinks: false, allowEmptyArchive: true
-                archiveArtifacts artifacts: '*BOOT.BIN', followSymlinks: false, allowEmptyArchive: true
-            }
-        }
-    }
-}
+            // stage("Installer") {
+            //     unstash "builtSources"
+            //     sh 'make -C ./CI/scripts test_installer'
+            //     junit testResults: 'test/*.xml', allowEmptyResults: true
+            //     archiveArtifacts artifacts: 'test/logs/*', followSymlinks: false, allowEmptyArchive: true
+            //     archiveArtifacts artifacts: '*BOOT.BIN', followSymlinks: false, allowEmptyArchive: true
+            // }
+//         }
+//     }
+// }
 
 /////////////////////////////////////////////////////
 
-demoNames = ['HDLLoopbackDelayEstimation','HDLFrequencyHopper','HDLTuneAGC','KernelFrequencyHopper']
+// demoNames = ['HDLLoopbackDelayEstimation','HDLFrequencyHopper','HDLTuneAGC','KernelFrequencyHopper']
 
-stage("Demo Tests") {
-    dockerParallelBuild(demoNames, dockerHost, dockerConfig) { 
-        branchName ->
-        withEnv(['DEMO='+branchName]) {
-            unstash "builtSources"
-	    sh 'rm test/*.xml'
-            sh 'make -C ./CI/scripts test_targeting_demos'
-            junit testResults: 'test/*.xml', allowEmptyResults: true
-            archiveArtifacts artifacts: 'test/logs/*', followSymlinks: false, allowEmptyArchive: true
-            archiveArtifacts artifacts: '*BOOT.BIN', followSymlinks: false, allowEmptyArchive: true
-            archiveArtifacts artifacts: '*uImage', followSymlinks: false, allowEmptyArchive: true
-        }
-    }
-}
-
-/////////////////////////////////////////////////////
-
-appNames = ['lte_pa_app']
-
-stage("Build Deployable Apps") {
-    dockerParallelBuild(appNames, dockerHost, dockerConfig) { 
-        branchName ->
-        withEnv(['APP='+branchName]) {
-            unstash "builtSources"
-            sh 'make -C ./CI/scripts ${APP}'
-            archiveArtifacts artifacts: 'trx_examples/streaming/LTE_PA_App/LTEPA/for_redistribution/*.exe', followSymlinks: false, allowEmptyArchive: true
-            archiveArtifacts artifacts: 'trx_examples/streaming/LTE_PA_App/LTEPA/for_redistribution/*.install', followSymlinks: false, allowEmptyArchive: true
-        }
-    }
-}
+// stage("Demo Tests") {
+//     dockerParallelBuild(demoNames, dockerHost, dockerConfig) { 
+//         branchName ->
+//         withEnv(['DEMO='+branchName]) {
+//             unstash "builtSources"
+// 	    sh 'rm test/*.xml'
+//             sh 'make -C ./CI/scripts test_targeting_demos'
+//             junit testResults: 'test/*.xml', allowEmptyResults: true
+//             archiveArtifacts artifacts: 'test/logs/*', followSymlinks: false, allowEmptyArchive: true
+//             archiveArtifacts artifacts: '*BOOT.BIN', followSymlinks: false, allowEmptyArchive: true
+//             archiveArtifacts artifacts: '*uImage', followSymlinks: false, allowEmptyArchive: true
+//         }
+//     }
+// }
 
 /////////////////////////////////////////////////////
 
-classNames = ['AD9361','AD9363','AD9364','AD9371','ADRV9009']
+// appNames = ['lte_pa_app']
 
-stage("Hardware Streaming Tests") {
-    dockerParallelBuild(classNames, dockerHost, dockerConfig) { 
-        branchName ->
-        withEnv(['HW='+branchName]) {
-            unstash "builtSources"
-            sh 'echo ${HW}'
-            // sh 'make -C ./CI/scripts test_streaming'
-        }
-    }
-}
+// stage("Build Deployable Apps") {
+//     dockerParallelBuild(appNames, dockerHost, dockerConfig) { 
+//         branchName ->
+//         withEnv(['APP='+branchName]) {
+//             unstash "builtSources"
+//             sh 'make -C ./CI/scripts ${APP}'
+//             archiveArtifacts artifacts: 'trx_examples/streaming/LTE_PA_App/LTEPA/for_redistribution/*.exe', followSymlinks: false, allowEmptyArchive: true
+//             archiveArtifacts artifacts: 'trx_examples/streaming/LTE_PA_App/LTEPA/for_redistribution/*.install', followSymlinks: false, allowEmptyArchive: true
+//         }
+//     }
+// }
+
+/////////////////////////////////////////////////////
+
+// classNames = ['AD9361','AD9363','AD9364','AD9371','ADRV9009']
+
+// stage("Hardware Streaming Tests") {
+//     dockerParallelBuild(classNames, dockerHost, dockerConfig) { 
+//         branchName ->
+//         withEnv(['HW='+branchName]) {
+//             unstash "builtSources"
+//             sh 'echo ${HW}'
+//             // sh 'make -C ./CI/scripts test_streaming'
+//         }
+//     }
+// }
 
 //////////////////////////////////////////////////////
 
