@@ -37,8 +37,7 @@ stage("Build Toolbox") {
 
 /////////////////////////////////////////////////////
 
-// boardNames = ['zed','zc702','zc706','zcu102','adrv9361','adrv9364','pluto']
-boardNames = ['zc702']
+boardNames = ['zed','zc702','zc706','zcu102','adrv9361','adrv9364','pluto']
 dockerConfig.add("-e HDLBRANCH=hdl_2019_r2")
 
 stage("HDL Tests") {
@@ -72,22 +71,23 @@ stage("HDL Tests") {
 
 /////////////////////////////////////////////////////
 
-// demoNames = ['HDLLoopbackDelayEstimation','HDLFrequencyHopper','HDLTuneAGC','KernelFrequencyHopper']
+demoNames = ['HDLLoopbackDelayEstimation','HDLFrequencyHopper','HDLTuneAGC','KernelFrequencyHopper']
 
-// stage("Demo Tests") {
-//     dockerParallelBuild(demoNames, dockerHost, dockerConfig) { 
-//         branchName ->
-//         withEnv(['DEMO='+branchName]) {
-//             unstash "builtSources"
-// 	    sh 'rm test/*.xml'
-//             sh 'make -C ./CI/scripts test_targeting_demos'
-//             junit testResults: 'test/*.xml', allowEmptyResults: true
-//             archiveArtifacts artifacts: 'test/logs/*', followSymlinks: false, allowEmptyArchive: true
-//             archiveArtifacts artifacts: '*BOOT.BIN', followSymlinks: false, allowEmptyArchive: true
-//             archiveArtifacts artifacts: '*uImage', followSymlinks: false, allowEmptyArchive: true
-//         }
-//     }
-// }
+stage("Demo Tests") {
+    dockerParallelBuild(demoNames, dockerHost, dockerConfig) { 
+        branchName ->
+        withEnv(['DEMO='+branchName]) {
+            unstash "builtSources"
+	    sh 'rm test/*.xml'
+            sh 'make -C ./CI/scripts test_targeting_demos'
+            junit testResults: 'test/*.xml', allowEmptyResults: true
+            archiveArtifacts artifacts: 'test/logs/*', followSymlinks: false, allowEmptyArchive: true
+            archiveArtifacts artifacts: '*BOOT.BIN', followSymlinks: false, allowEmptyArchive: true
+            archiveArtifacts artifacts: '*uImage', followSymlinks: false, allowEmptyArchive: true
+            stash includes: '*BOOT.BIN', name: 'bootbins', useDefaultExcludes: false
+        }
+    }
+}
 
 /////////////////////////////////////////////////////
 
@@ -125,6 +125,7 @@ stage("HDL Tests") {
 node {
     stage('Deploy Development') {
         unstash "builtSources"
+        unstash "'bootbins'"
         target = uploadArtifactory('TransceiverToolbox','*.mltbx')
         if (target != null){
             sh 'echo "' + new Date().format("yyMMdd_HHmm") + ": " + target + '" >> build_history.log'
