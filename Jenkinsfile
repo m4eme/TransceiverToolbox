@@ -38,41 +38,45 @@ stage("Build Toolbox") {
 /////////////////////////////////////////////////////
 
 // boardNames = ['zed','zc702','zc706','zcu102','adrv9361','adrv9364','pluto']
-// dockerConfig.add("-e HDLBRANCH=hdl_2019_r2")
+boardNames = ['pluto']
+dockerConfig.add("-e HDLBRANCH=hdl_2019_r2")
 
-// stage("HDL Tests") {
-//     dockerParallelBuild(boardNames, dockerHost, dockerConfig) { 
-//         branchName ->
-//         withEnv(['BOARD='+branchName]) {
-//             stage("Source") {
-//                 unstash "builtSources"
-//                 sh 'make -C ./CI/scripts test_synth'
-//                 junit testResults: 'test/*.xml', allowEmptyResults: true
-//                 archiveArtifacts artifacts: 'test/logs/*', followSymlinks: false, allowEmptyArchive: true
-//             }
-// /*
-//             stage("Synth") {
-//                 unstash "builtSources"
-//                 sh 'make -C ./CI/scripts test_synth'
-//                 junit testResults: 'test/*.xml', allowEmptyResults: true
-//                 archiveArtifacts artifacts: 'test/logs/*', followSymlinks: false, allowEmptyArchive: true
-//             }
-// */
-//             stage("Installer") {
-//                 unstash "builtSources"
-//                 sh 'make -C ./CI/scripts test_installer'
-//                 junit testResults: 'test/*.xml', allowEmptyResults: true
-//                 archiveArtifacts artifacts: 'test/logs/*', followSymlinks: false, allowEmptyArchive: true
-//                 archiveArtifacts artifacts: '*BOOT.BIN', followSymlinks: false, allowEmptyArchive: true
-//             }
-//         }
-//     }
-// }
+stage("HDL Tests") {
+    dockerParallelBuild(boardNames, dockerHost, dockerConfig) { 
+        branchName ->
+        withEnv(['BOARD='+branchName]) {
+            stage("Source") {
+                unstash "builtSources"
+                sh 'make -C ./CI/scripts test_synth'
+                junit testResults: 'test/*.xml', allowEmptyResults: true
+                archiveArtifacts artifacts: 'test/logs/*', followSymlinks: false, allowEmptyArchive: true
+            }
+/*
+            stage("Synth") {
+                unstash "builtSources"
+                sh 'make -C ./CI/scripts test_synth'
+                junit testResults: 'test/*.xml', allowEmptyResults: true
+                archiveArtifacts artifacts: 'test/logs/*', followSymlinks: false, allowEmptyArchive: true
+            }
+*/
+            stage("Installer") {
+                unstash "builtSources"
+                sh 'make -C ./CI/scripts test_installer'
+                junit testResults: 'test/*.xml', allowEmptyResults: true
+                archiveArtifacts artifacts: 'test/logs/*', followSymlinks: false, allowEmptyArchive: true
+                archiveArtifacts artifacts: '*BOOT.BIN', followSymlinks: false, allowEmptyArchive: true
+                stash includes: '*BOOT.BIN', name: 'bootbins', useDefaultExcludes: false
+                stash includes: 'trx_examples/targeting/modem-qpsk/FixedPoint/demos/ADI_DMA_TT/*BOOT.BIN', name: 'bootbins', useDefaultExcludes: false
+            }
+        }
+    }
+}
 
 /////////////////////////////////////////////////////
 
-demoNames = ['HDLLoopbackDelayEstimation','HDLFrequencyHopper','HDLTuneAGC','KernelFrequencyHopper']
+// demoNames = ['HDLLoopbackDelayEstimation','HDLFrequencyHopper','HDLTuneAGC','KernelFrequencyHopper']
 demoNames = ['HDLFrequencyHopper']
+
 stage("Demo Tests") {
     dockerParallelBuild(demoNames, dockerHost, dockerConfig) { 
         branchName ->
@@ -125,7 +129,7 @@ stage("Demo Tests") {
 node {
     stage('Deploy Development') {
         unstash "builtSources"
-        unstash "'bootbins'"
+        unstash "bootbins"
         target = uploadArtifactory('TransceiverToolbox','*.mltbx')
         if (target != null){
             sh 'echo "' + new Date().format("yyMMdd_HHmm") + ": " + target + '" >> build_history.log'
