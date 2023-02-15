@@ -426,7 +426,7 @@ proc preprocess_bd {project carrier rxtx} {
                     connect_bd_net [get_bd_pins axi_cpu_interconnect/M03_ACLK] [get_bd_pins sys_ps8/pl_clk0]
                     connect_bd_net [get_bd_pins axi_cpu_interconnect/M04_ACLK] [get_bd_pins sys_ps8/pl_clk0]
                     connect_bd_net [get_bd_pins axi_cpu_interconnect/M05_ACLK] [get_bd_pins sys_ps8/pl_clk0]
-                    # Reset for M00 to M05 from sys_rstgen/peripheral_aresetn
+                    # Reset for M00 to M06 from sys_rstgen/peripheral_aresetn
                     connect_bd_net [get_bd_pins axi_cpu_interconnect/ARESETN] [get_bd_pins sys_rstgen/peripheral_aresetn]
                     connect_bd_net [get_bd_pins axi_cpu_interconnect/S00_ARESETN] [get_bd_pins sys_rstgen/peripheral_aresetn]
                     connect_bd_net [get_bd_pins axi_cpu_interconnect/M00_ARESETN] [get_bd_pins sys_rstgen/peripheral_aresetn]
@@ -435,14 +435,14 @@ proc preprocess_bd {project carrier rxtx} {
                     connect_bd_net [get_bd_pins axi_cpu_interconnect/M03_ARESETN] [get_bd_pins sys_rstgen/peripheral_aresetn]
                     connect_bd_net [get_bd_pins axi_cpu_interconnect/M04_ARESETN] [get_bd_pins sys_rstgen/peripheral_aresetn]
                     connect_bd_net [get_bd_pins axi_cpu_interconnect/M05_ARESETN] [get_bd_pins sys_rstgen/peripheral_aresetn]
+                    connect_bd_net [get_bd_pins axi_cpu_interconnect/M06_ARESETN] [get_bd_pins sys_rstgen/peripheral_aresetn]
+
                     # Connect clock and reset
                     if {$rxtx == "rx" || $rxtx == "rxtx"} {
                         connect_bd_net [get_bd_pins axi_cpu_interconnect/M06_ACLK] [get_bd_pins axi_adrv9001/adc_1_clk]
-                        connect_bd_net [get_bd_pins axi_cpu_interconnect/M06_ARESETN] [get_bd_pins axi_adrv9001/adc_1_rst]
-		    } else {
+                    } else {
                         connect_bd_net [get_bd_pins axi_cpu_interconnect/M06_ACLK] [get_bd_pins axi_adrv9001/dac_1_clk]
-                        connect_bd_net [get_bd_pins axi_cpu_interconnect/M06_ARESETN] [get_bd_pins axi_adrv9001/dac_1_rst]
-		    }
+                    }
                 }                
             }
         }
