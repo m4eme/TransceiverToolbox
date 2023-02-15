@@ -12,7 +12,8 @@ MLRELEASE := R2021b
 endif
 
 ifeq ($(HDLBRANCH),)
-HDLBRANCH := hdl_2019_r2
+#HDLBRANCH := hdl_2019_r2
+HDLBRANCH := master
 endif
 
 ifeq ($(OS),Windows_NT)

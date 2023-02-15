@@ -392,11 +392,50 @@ proc preprocess_bd {project carrier rxtx} {
             }
             switch $carrier {                
                 zcu102 {                    
-                    # Add 1 extra AXI master ports to the interconnect
+                    # Remove AXI Smart Interconnect
+                    delete_bd_objs [get_bd_intf_nets sys_ps8_M_AXI_HPM0_LPD] \
+                     [get_bd_intf_nets axi_cpu_interconnect_M00_AXI] [get_bd_intf_nets axi_cpu_interconnect_M01_AXI]\
+                     [get_bd_intf_nets axi_cpu_interconnect_M02_AXI] [get_bd_intf_nets axi_cpu_interconnect_M03_AXI]\
+                     [get_bd_intf_nets axi_cpu_interconnect_M04_AXI] [get_bd_intf_nets axi_cpu_interconnect_M05_AXI]\
+                     [get_bd_cells axi_cpu_interconnect] 
+                    # Add regular AXI Interconnect
+                    create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_cpu_interconnect
+                    # Set up interconnect with 7 Master ports (existing 6 + user IP)
                     set_property -dict [list CONFIG.NUM_MI {7}] [get_bd_cells axi_cpu_interconnect]
+                    # Reconnect AXI Ports
+                    # M00 to axi_sysid_0
+                    connect_bd_intf_net -boundary_type upper [get_bd_intf_pins axi_cpu_interconnect/M00_AXI] [get_bd_intf_pins axi_sysid_0/s_axi]
+                    # M01 to axi_adrv9001
+                    connect_bd_intf_net -boundary_type upper [get_bd_intf_pins axi_cpu_interconnect/M01_AXI] [get_bd_intf_pins axi_adrv9001/s_axi]
+                    # M02 to axi_adrv9001_rx1_dma
+                    connect_bd_intf_net -boundary_type upper [get_bd_intf_pins axi_cpu_interconnect/M02_AXI] [get_bd_intf_pins axi_adrv9001_rx1_dma/s_axi]
+                    # M03 to axi_adrv9001_rx2_dma
+                    connect_bd_intf_net -boundary_type upper [get_bd_intf_pins axi_cpu_interconnect/M03_AXI] [get_bd_intf_pins axi_adrv9001_rx2_dma/s_axi]
+                    # M04 to axi_adrv9001_tx1_dma
+                    connect_bd_intf_net -boundary_type upper [get_bd_intf_pins axi_cpu_interconnect/M04_AXI] [get_bd_intf_pins axi_adrv9001_tx1_dma/s_axi]
+                    # M05 to axi_adrv9001_tx2_dma
+                    connect_bd_intf_net -boundary_type upper [get_bd_intf_pins axi_cpu_interconnect/M05_AXI] [get_bd_intf_pins axi_adrv9001_tx2_dma/s_axi]
+                    # S00 to sys_ps8/M_AXI_HPM0_LPD
+                    connect_bd_intf_net -boundary_type upper [get_bd_intf_pins axi_cpu_interconnect/S00_AXI] [get_bd_intf_pins sys_ps8/M_AXI_HPM0_LPD]
+                    # Clocks for M00 to M05 from sys_ps8/pl_clk0
+                    connect_bd_net [get_bd_pins axi_cpu_interconnect/ACLK] [get_bd_pins sys_ps8/pl_clk0]
+                    connect_bd_net [get_bd_pins axi_cpu_interconnect/S00_ACLK] [get_bd_pins sys_ps8/pl_clk0]
+                    connect_bd_net [get_bd_pins axi_cpu_interconnect/M00_ACLK] [get_bd_pins sys_ps8/pl_clk0]
+                    connect_bd_net [get_bd_pins axi_cpu_interconnect/M01_ACLK] [get_bd_pins sys_ps8/pl_clk0]
+                    connect_bd_net [get_bd_pins axi_cpu_interconnect/M02_ACLK] [get_bd_pins sys_ps8/pl_clk0]
+                    connect_bd_net [get_bd_pins axi_cpu_interconnect/M03_ACLK] [get_bd_pins sys_ps8/pl_clk0]
+                    connect_bd_net [get_bd_pins axi_cpu_interconnect/M04_ACLK] [get_bd_pins sys_ps8/pl_clk0]
+                    connect_bd_net [get_bd_pins axi_cpu_interconnect/M05_ACLK] [get_bd_pins sys_ps8/pl_clk0]
+                    # Reset for M00 to M05 from sys_rstgen/peripheral_aresetn
+                    connect_bd_net [get_bd_pins axi_cpu_interconnect/ARESETN] [get_bd_pins sys_rstgen/peripheral_aresetn]
+                    connect_bd_net [get_bd_pins axi_cpu_interconnect/S00_ARESETN] [get_bd_pins sys_rstgen/peripheral_aresetn]
+                    connect_bd_net [get_bd_pins axi_cpu_interconnect/M00_ARESETN] [get_bd_pins sys_rstgen/peripheral_aresetn]
+                    connect_bd_net [get_bd_pins axi_cpu_interconnect/M01_ARESETN] [get_bd_pins sys_rstgen/peripheral_aresetn]
+                    connect_bd_net [get_bd_pins axi_cpu_interconnect/M02_ARESETN] [get_bd_pins sys_rstgen/peripheral_aresetn]
+                    connect_bd_net [get_bd_pins axi_cpu_interconnect/M03_ARESETN] [get_bd_pins sys_rstgen/peripheral_aresetn]
+                    connect_bd_net [get_bd_pins axi_cpu_interconnect/M04_ARESETN] [get_bd_pins sys_rstgen/peripheral_aresetn]
+                    connect_bd_net [get_bd_pins axi_cpu_interconnect/M05_ARESETN] [get_bd_pins sys_rstgen/peripheral_aresetn]
                     # Connect clock and reset
-                    #connect_bd_net [get_bd_pins axi_cpu_interconnect/M06_ACLK] [get_bd_pins sys_ps8/pl_clk0]
-                    #connect_bd_net [get_bd_pins axi_cpu_interconnect/M06_ARESETN] [get_bd_pins sys_rstgen/peripheral_aresetn]
                     if {$rxtx == "rx" || $rxtx == "rxtx"} {
                         connect_bd_net [get_bd_pins axi_cpu_interconnect/M06_ACLK] [get_bd_pins axi_adrv9001/adc_1_clk]
                         connect_bd_net [get_bd_pins axi_cpu_interconnect/M06_ARESETN] [get_bd_pins axi_adrv9001/adc_1_rst]
