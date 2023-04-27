@@ -973,16 +973,18 @@
                 ],
                 "tx": [
                     {
-                        "input": "true",
-                        "width": 1,
-                        "name": "util_dac_1_upack/fifo_rd_valid",
-                        "type": "valid"
-                    },
-                    {
                         "input": "false",
                         "width": 1,
-                        "name": "util_dac_1_upack/fifo_rd_en",
-                        "type": "valid"
+                        "name": "axi_adrv9001/dac_1_dunf",
+                        "type": "data",
+                        "m_name": "ADRV9002 DAC 1 Underflow"
+                    },
+                    {
+                        "input": "true",
+                        "width": 1,
+                        "name": "axi_adrv9001/dac_1_valid_i0",
+                        "type": "data",
+                        "m_name": "ADRV9002 DAC 1 Request"
                     },
                     {
                         "input": "false",
@@ -1031,6 +1033,27 @@
                         "width": 16,
                         "name": "util_dac_1_upack/fifo_rd_data_3",
                         "type": "data"
+                    },
+                    {
+                        "input": "true",
+                        "width": 1,
+                        "name": "util_dac_1_upack/fifo_rd_underflow",
+                        "type": "data",
+                        "m_name": "ADRV9002 DAC 1 FIFO Underflow"
+                    },
+                    {
+                        "input": "true",
+                        "width": 1,
+                        "name": "util_dac_1_upack/fifo_rd_valid",
+                        "type": "data",
+                        "m_name": "ADRV9002 DAC 1 FIFO Rd Valid"
+                    },
+                    {
+                        "input": "false",
+                        "width": 1,
+                        "name": "util_dac_1_upack/fifo_rd_en",
+                        "type": "valid",
+                        "m_name": "ADRV9002 DAC 1 FIFO Rd Enable"
                     }
                 ]
             }

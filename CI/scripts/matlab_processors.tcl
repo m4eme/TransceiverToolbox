@@ -389,6 +389,10 @@ proc preprocess_bd {project carrier rxtx} {
                 delete_bd_objs [get_bd_nets util_dac_1_upack_fifo_rd_data_1]
                 delete_bd_objs [get_bd_nets util_dac_1_upack_fifo_rd_data_2]
                 delete_bd_objs [get_bd_nets util_dac_1_upack_fifo_rd_data_3]
+                # Remove enable aka valid
+                delete_bd_objs [get_bd_nets axi_adrv9001_dac_1_valid_i0]
+                # Remove underflow connection from FIFO to DAC
+                delete_bd_objs [get_bd_nets util_dac_1_upack_fifo_rd_underflow]
             }
             switch $carrier {                
                 zcu102 {                    
